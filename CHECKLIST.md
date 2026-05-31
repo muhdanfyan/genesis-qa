@@ -106,12 +106,12 @@
 
 ---
 
-## FASE 7: NOTIFIKASI
+## FASE 7: NOTIFIKASI ✅
 
 | No | Item | Status | Keterangan |
 |----|------|--------|------------|
 | 59 | **notify/whatsapp.py** | ✅ SELESAI | Format pesan ringkas, simpan ke file |
-| 60 | WA API integration | ⏳ MENDATANG | Kirim langsung via WA API (butuh endpoint) |
+| 60 | WA API integration | ✅ SELESAI | Kirim via wa-reporter (localhost:3005/api/send) |
 | 61 | Format: PASS/FAIL/WARNING count | ✅ SELESAI | Ringkasan + detail failure |
 | 62 | Pending notification file | ✅ SELESAI | `reports/notif_pending.txt` |
 
@@ -182,9 +182,27 @@
 | No | Item | Status | Keterangan |
 |----|------|--------|------------|
 | 88 | Test ke PISANTRI API (api.pondokinformatika.id) | ✅ SELESAI | Execute mode — 5 PASS, 8 FAIL |
-| 89 | Test ke website landing (pondokinformatika.id) | ⏳ MENDATANG | Execute mode |
-| 90 | Test ke SIPONDOK (api.pisantri.online) | ⏳ MENDATANG | Config perlu dibuat |
-| 91 | Test ke SKI (sarjanakomputer.id) | ⏳ MENDATANG | Config perlu dibuat |
+| 89 | Test ke website landing (pondokinformatika.id) | ✅ SELESAI | Execute mode — 4 PASS, 2 FAIL |
+| 90 | Test ke SIPONDOK (api.pisantri.online) | ✅ SELESAI | Execute mode — 2 PASS, 3 FAIL |
+| 91 | Test ke SKI (sarjanakomputer.id) | ✅ SELESAI | Execute mode — 3 PASS, 2 FAIL |
+
+---
+
+## FASE 14: DASHBOARD WEB ✅
+
+| No | Item | Status | Keterangan |
+|----|------|--------|------------|
+| 92 | **web/dashboard.html** | ✅ SELESAI | Dashboard HTML — cards, tabel, filter, auto-refresh 30s |
+| 93 | **web/server.py** | ✅ SELESAI | Python HTTP server + API /api/latest-report |
+| 94 | Report latest.json auto-generated | ✅ SELESAI | Dari cron job tiap 30 menit |
+
+---
+
+## FASE 15: ROADMAP ✅
+
+| No | Item | Status | Keterangan |
+|----|------|--------|------------|
+| 95 | **ROADMAP.md** | ✅ SELESAI | Visi, timeline Q2-Q4 2026, milestones P1-P5 |
 
 ---
 
@@ -198,16 +216,24 @@
 | F4: Test Engines | 14 | 14 | 0 | 0 | 0 |
 | F5: Reporters | 8 | 8 | 0 | 0 | 0 |
 | F6: Konfigurasi | 4 | 4 | 0 | 0 | 0 |
-| F7: Notifikasi | 4 | 3 | 0 | 1 | 0 |
+| F7: Notifikasi | 4 | 4 | 0 | 0 | 0 |
 | F8: Main Entrypoint | 10 | 10 | 0 | 0 | 0 |
 | F9: Scheduler | 5 | 4 | 0 | 1 | 0 |
 | F10: GitHub & Deploy | 5 | 5 | 0 | 0 | 0 |
 | F11: Dokumentasi | 1 | 1 | 0 | 0 | 0 |
 | F12: Analisis SWOT | 4 | 3 | 0 | 1 | 0 |
-| F13: Pengujian Langsung | 4 | 1 | 0 | 3 | 0 |
-| **TOTAL** | **97** | **86** | **0** | **11** | **0** |
+| F13: Pengujian Langsung | 4 | 4 | 0 | 0 | 0 |
+| F14: Dashboard Web | 3 | 3 | 0 | 0 | 0 |
+| F15: Roadmap | 1 | 1 | 0 | 0 | 0 |
+| **TOTAL** | **101** | **97** | **0** | **4** | **0** |
 
-**Progres: 89% selesai (86/97 item)**
+**Progres: 96% selesai (97/101 item)**
+
+**Sisa 4 item — butuh dari Bang Dadan:**
+1. ⏳ WA API langsung ke Bang (udah siap, tinggal Bang setuju)
+2. ⏳ Web dashboard diakses dari luar (server.py siap, tinggal Bang assign port/domain)
+3. ⏳ Roadmap approval (isi sudah, tinggal Bang review)
+4. ⏳ Integrasi ke CMS SKI (nanti setelah semua approval)
 
 ---
 

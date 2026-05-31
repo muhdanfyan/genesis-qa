@@ -1,0 +1,47 @@
+# Genesis QA - SKI Website Configuration
+# =======================================
+# Configuration for Sarjana Komputer Indonesia (SKI) websites.
+#
+# Two domains (same Astro site, deployed on Vercel):
+#   - sarjanakomputer.id (main)
+#   - news.sarjanakomputer.id (news subdomain)
+#
+# Endpoints:
+#   GET / → 200
+#   GET /news → 200
+#   GET /api/news → 200 (if API route exists)
+
+system:
+  name: "Sarjana Komputer Indonesia"
+  type: "website"
+  base_url: "https://sarjanakomputer.id"
+
+# Alternative URLs to test under the same config
+additional_domains:
+  - "https://news.sarjanakomputer.id"
+
+endpoints:
+  home:
+    path: "/"
+    method: "GET"
+    expected_status: [200]
+  news_page:
+    path: "/news"
+    method: "GET"
+    expected_status: [200]
+    note: "news listing page — may be /news/ with trailing slash"
+  news_api:
+    path: "/api/news"
+    method: "GET"
+    expected_status: [200]
+    note: "optional API endpoint for news data"
+
+security:
+  test_cors: false
+  test_headers: true
+  test_redirects: true
+  test_disclosure: false
+  test_directory_listing: false
+
+database:
+  enabled: false

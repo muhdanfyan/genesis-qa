@@ -60,6 +60,27 @@ cors:
     - "https://pesantrenteknologi.id"
 
 # Database configuration (optional — only used if driver is available)
-database:
-  enabled: false
-  connection_string: "${PISANTRI_DB_URL}"
+performance:
+  enabled: true
+  response_time_threshold_ms: 2000
+  concurrent_requests: 10
+  stress_requests: 20
+  endurance_duration_sec: 15
+  tests:
+    - name: "Landing page response time"
+      type: response_time
+      endpoint: /api/public/landing-data
+      method: GET
+      threshold_ms: 2000
+    - name: "Concurrent landing page"
+      type: concurrent
+      endpoint: /api/public/landing-data
+      method: GET
+      concurrency: 5
+      requests: 10
+    - name: "Stress test landing page"
+      type: stress
+      endpoint: /api/public/landing-data
+      method: GET
+      requests: 20
+      ramp_up: 3

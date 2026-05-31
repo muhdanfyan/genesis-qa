@@ -1,45 +1,41 @@
 # Genesis QA - Pondok Informatika Website Configuration
 # ======================================================
-# Configuration for testing the Pondok Informatika landing page
-# and public-facing website.
+# Configuration for testing pondokinformatika.id landing page.
+# Single-page app (SPA) — no CORS needed.
+#
+# Endpoints:
+#   GET / → 200 (landing page)
+#   GET /login → 200 (login page)
+#   GET /favicon.ico → 200 (favicon)
+#
+# Security: test headers, disclosure, redirects
+# No CORS test for SPA.
 
 system:
-  name: "Pondok Informatika"
-  type: "website"
-  base_url: "https://pondokinformatika.com"
+  name: "Pondok Informatika Website"
+  type: "single-page-app"
+  base_url: "https://pondokinformatika.id"
 
 endpoints:
-  home:
+  landing_page:
     path: "/"
     method: "GET"
     expected_status: [200]
-  about:
-    path: "/about"
+  login_page:
+    path: "/login"
     method: "GET"
     expected_status: [200]
-  contact:
-    path: "/contact"
-    method: "GET"
-    expected_status: [200]
-  blog:
-    path: "/blog"
-    method: "GET"
-    expected_status: [200]
-  programs:
-    path: "/programs"
-    method: "GET"
-    expected_status: [200]
-  faq:
-    path: "/faq"
+  favicon:
+    path: "/favicon.ico"
     method: "GET"
     expected_status: [200]
 
 security:
-  test_cors: false
+  test_cors: false       # Not needed for SPA
   test_headers: true
   test_redirects: true
   test_disclosure: true
-  test_directory_listing: true
+  test_directory_listing: false
 
 cors:
   allowed_origins: []

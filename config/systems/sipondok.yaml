@@ -1,0 +1,49 @@
+# Genesis QA - SiPondok API Configuration
+# ========================================
+# Configuration for api.pisantri.online (SiPondok / Pondok Pesantren).
+#
+# PISANTRI has two tenants:
+#   - api.pisantri.online → SiPondok (Raudhatulfitrah + Tahfizh Baubau)
+#   - api.pondokinformatika.id → PISANTRI main (existing config)
+#
+# From nginx config, api.pisantri.online has root /var/www/sipondok/public
+# with no PHP handler on port 80. Minimal config for now.
+
+system:
+  name: "SiPondok API"
+  type: "api"
+  base_url: "https://api.pisantri.online"
+
+auth:
+  login_endpoint: "/api/auth/login"
+  credentials:
+    admin:
+      username: "admin@sipondok.com"
+      password: "${SIPONDOK_ADMIN_PASSWORD}"
+    user:
+      username: "user@sipondok.com"
+      password: "${SIPONDOK_USER_PASSWORD}"
+
+endpoints:
+  # Basic health/landing check
+  landing_page:
+    path: "/"
+    method: "GET"
+    expected_status: [200, 302]
+    note: "root — may redirect or return static"
+  # Auth endpoints (if PHP/FPM is active)
+  login:
+    path: "/api/auth/login"
+    method: "POST"
+    expected_status: [200]
+    auth_required: false
+
+security:
+  test_cors: false
+  test_headers: true
+  test_redirects: true
+  test_disclosure: true
+  test_directory_listing: false
+
+database:
+  enabled: false

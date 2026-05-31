@@ -1,0 +1,58 @@
+# Genesis QA - Template Konfigurasi Sistem Baru
+# ================================================
+# Copy file ini ke config/systems/namasistem.yaml
+# lalu isi sesuai sistem yang mau dites.
+
+system:
+  name: "Nama Sistem"
+  type: "api"          # api | website | single-page-app
+  base_url: "https://api.example.com"
+
+auth:
+  login_endpoint: "/api/auth/login"
+  credentials:
+    admin:
+      username: "admin@example.com"
+      password: "${SISTEM_ADMIN_PASSWORD}"  # Set via env variable
+    user:
+      username: "user@example.com"
+      password: "${SISTEM_USER_PASSWORD}"
+
+endpoints:
+  # Contoh endpoint — ganti sesuai sistem
+  health:
+    path: "/health"
+    method: "GET"
+    expected_status: [200]
+  landing_data:
+    path: "/api/public/landing-data"
+    method: "GET"
+    expected_status: [200]
+  login:
+    path: "/api/auth/login"
+    method: "POST"
+    expected_status: [200]
+    auth_required: false
+
+security:
+  test_cors: true
+  test_headers: true
+  test_redirects: true
+  test_disclosure: true
+  test_directory_listing: true
+
+cors:
+  allowed_origins:
+    - "https://example.com"
+    - "https://www.example.com"
+
+database:
+  enabled: false  # Set true kalau ada akses DB
+  connection_string: "${SISTEM_DB_URL}"
+
+performance:
+  enabled: false
+  response_time_threshold_ms: 2000
+  concurrent_requests: 10
+  stress_requests: 50
+  endurance_duration_sec: 30

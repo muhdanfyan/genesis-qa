@@ -42,13 +42,14 @@
 
 | No | Item | Status | Keterangan |
 |----|------|--------|------------|
-| 21 | **generate/scenario_generator.py** | ✅ SELESAI | Generate test scenario dari template |
-| 22 | **generate/edge_case_factory.py** | ✅ SELESAI | Edge case otomatis per endpoint |
+| No | Item | Status | Keterangan |
+|----|------|--------|------------|
 | 23 | Template: Functional test | ✅ SELESAI | Health check, form submission, listing |
 | 24 | Template: Security test | ✅ SELESAI | SQLi, XSS, auth bypass |
 | 25 | Template: Performance test | ✅ SELESAI | Response time, concurrent requests |
 | 26 | Template: Compliance test | ✅ SELESAI | GDPR, data exposure |
 | 27 | Template: Integration test | ✅ SELESAI | Upstream health, webhook |
+| 27a | OpenAPI/Swagger parser | ✅ SELESAI | Baca spec OAS3/Swagger2, generate scenario + config otomatis |
 | 28 | Edge case: Empty payload | ✅ SELESAI | Null, {}, empty string |
 | 29 | Edge case: Boundary values | ✅ SELESAI | 10k char string, unicode |
 | 30 | Edge case: Type mismatch | ✅ SELESAI | String → int, bad email |
@@ -70,7 +71,8 @@
 | 39 | **test/redirect_engine.py** | ✅ SELESAI | Chain tracking, loop detection (max 10), method preservation 307/308 |
 | 40 | **test/security_engine.py** | ✅ SELESAI | Headers audit, info leak, directory listing |
 | 41 | **test/db_engine.py** | ✅ SELESAI | DB connection, query, schema (opsional via SQLAlchemy) |
-| 42 | Fitur: Retry 3x on timeout | ✅ SELESAI | Exponential backoff |
+| 42 | **test/performance_engine.py** | ✅ SELESAI | Response time, concurrent, stress, endurance test |
+| 43 | Fitur: Retry 3x on timeout | ✅ SELESAI | Exponential backoff |
 | 43 | Fitur: Timing tiap request | ✅ SELESAI | Dalam milidetik |
 | 44 | Fitur: Redirect chain max 10 hops | ✅ SELESAI | Loop detection otomatis |
 | 45 | Fitur: CORS berbagai origin | ✅ SELESAI | 3 skenario origin |
@@ -99,7 +101,7 @@
 |----|------|--------|------------|
 | 55 | **config/systems/pisantri.yaml** | ✅ SELESAI | PISANTRI API: 18 endpoint, auth JWT, security, CORS, DB |
 | 56 | **config/systems/pondokinformatika.yaml** | ✅ SELESAI | Website landing: 7 endpoint, security checks |
-| 57 | Template config untuk sistem baru | ⏳ MENDATANG | Contoh kosong yang bisa dicopy |
+| 57 | Template config untuk sistem baru | ✅ SELESAI | Contoh kosong di _template.yaml |
 | 58 | Support environment variable untuk credential | ✅ SELESAI | Password DB via env |
 
 ---
@@ -109,7 +111,7 @@
 | No | Item | Status | Keterangan |
 |----|------|--------|------------|
 | 59 | **notify/whatsapp.py** | ✅ SELESAI | Format pesan ringkas, simpan ke file |
-| 60 | WA API integration | ⏳ MENDATANG | Kirim langsung via API WA |
+| 60 | WA API integration | ⏳ MENDATANG | Kirim langsung via WA API (butuh endpoint) |
 | 61 | Format: PASS/FAIL/WARNING count | ✅ SELESAI | Ringkasan + detail failure |
 | 62 | Pending notification file | ✅ SELESAI | `reports/notif_pending.txt` |
 
@@ -139,8 +141,8 @@
 | 73 | **scheduler/cron_runner.sh** | ✅ SELESAI | Bash script untuk cron job |
 | 74 | Auto-install dependencies | ✅ SELESAI | Pip install kalo kurang |
 | 75 | Logging ke file | ✅ SELESAI | `scheduler/cron.log` |
-| 76 | Cron job aktif tiap 30 menit | ⏳ MENDATANG | Install ke crontab |
-| 77 | Notifikasi otomatis kalo FAIL | ⏳ MENDATANG | Integrasi WA API |
+| 76 | Cron job aktif tiap 30 menit | ✅ SELESAI | Install ke crontab — test otomatis |
+| 77 | Notifikasi otomatis kalo FAIL | ⏳ MENDATANG | Integrasi WA API (butuh endpoint) |
 
 ---
 
@@ -148,11 +150,11 @@
 
 | No | Item | Status | Keterangan |
 |----|------|--------|------------|
-| 78 | Init Git repository | ⏳ MENDATANG | `git init` |
-| 79 | Create .gitignore | ⏳ MENDATANG | Python + cache + reports |
-| 80 | Commit pertama | ⏳ MENDATANG | |
-| 81 | Push ke GitHub | ⏳ MENDATANG | `git remote add origin ...` |
-| 82 | Setup branch main | ⏳ MENDATANG | |
+| 78 | Init Git repository | ✅ SELESAI | `git init` |
+| 79 | Create .gitignore | ✅ SELESAI | Python + cache + reports |
+| 80 | Commit pertama | ✅ SELESAI | |
+| 81 | Push ke GitHub | ✅ SELESAI | github.com/muhdanfyan/genesis-qa |
+| 82 | Setup GitHub Actions CI/CD | ✅ SELESAI | Auto test tiap push/PR |
 
 ---
 
@@ -164,13 +166,13 @@
 
 ---
 
-## FASE 12: ANALISIS SWOT
+## FASE 12: ANALISIS SWOT ✅
 
 | No | Item | Status | Keterangan |
 |----|------|--------|------------|
-| 84 | Identifikasi kompetitor (tools QA sejenis) | ⏳ MENDATANG | Research via web |
-| 85 | Analisis SWOT genesis-qa | ⏳ MENDATANG | Strengths, Weaknesses, Opportunities, Threats |
-| 86 | Adopsi fitur unggulan kompetitor | ⏳ MENDATANG | Improvement plan |
+| 84 | Identifikasi kompetitor (tools QA sejenis) | ✅ SELESAI | 9 tools: Postman, Schemathesis, Tavern, Dredd, Hoppscotch/Bruno, OWASP ZAP, k6, RESTler, CATS |
+| 85 | Analisis SWOT genesis-qa | ✅ SELESAI | SWOT.md — Strengths 10, Weaknesses 14, Opportunities 12, Threats 10 |
+| 86 | Adopsi fitur unggulan kompetitor | ✅ SELESAI | 12 fitur prioritas diadopsi (OpenAPI, CI/CD, perf test selesai) |
 | 87 | Roadmap pengembangan | ⏳ MENDATANG | Prioritized feature backlog |
 
 ---
@@ -179,7 +181,7 @@
 
 | No | Item | Status | Keterangan |
 |----|------|--------|------------|
-| 88 | Test ke PISANTRI API (api.pondokinformatika.id) | ⏳ MENDATANG | Full pipeline |
+| 88 | Test ke PISANTRI API (api.pondokinformatika.id) | ✅ SELESAI | Execute mode — 5 PASS, 8 FAIL |
 | 89 | Test ke website landing (pondokinformatika.id) | ⏳ MENDATANG | Execute mode |
 | 90 | Test ke SIPONDOK (api.pisantri.online) | ⏳ MENDATANG | Config perlu dibuat |
 | 91 | Test ke SKI (sarjanakomputer.id) | ⏳ MENDATANG | Config perlu dibuat |
@@ -192,20 +194,20 @@
 |------|-----------|-----------|-----------|-------------|---------|
 | F1: Struktur Proyek | 9 | 9 | 0 | 0 | 0 |
 | F2: Scan Module | 11 | 11 | 0 | 0 | 0 |
-| F3: Generate Module | 14 | 14 | 0 | 0 | 0 |
-| F4: Test Engines | 12 | 12 | 0 | 0 | 0 |
+| F3: Generate Module | 15 | 15 | 0 | 0 | 0 |
+| F4: Test Engines | 14 | 14 | 0 | 0 | 0 |
 | F5: Reporters | 8 | 8 | 0 | 0 | 0 |
-| F6: Konfigurasi | 4 | 3 | 0 | 1 | 0 |
+| F6: Konfigurasi | 4 | 4 | 0 | 0 | 0 |
 | F7: Notifikasi | 4 | 3 | 0 | 1 | 0 |
 | F8: Main Entrypoint | 10 | 10 | 0 | 0 | 0 |
-| F9: Scheduler | 5 | 3 | 0 | 2 | 0 |
-| F10: GitHub & Deploy | 5 | 0 | 0 | 5 | 0 |
+| F9: Scheduler | 5 | 4 | 0 | 1 | 0 |
+| F10: GitHub & Deploy | 5 | 5 | 0 | 0 | 0 |
 | F11: Dokumentasi | 1 | 1 | 0 | 0 | 0 |
-| F12: Analisis SWOT | 4 | 0 | 0 | 4 | 0 |
-| F13: Pengujian Langsung | 4 | 0 | 0 | 4 | 0 |
-| **TOTAL** | **91** | **74** | **0** | **17** | **0** |
+| F12: Analisis SWOT | 4 | 3 | 0 | 1 | 0 |
+| F13: Pengujian Langsung | 4 | 1 | 0 | 3 | 0 |
+| **TOTAL** | **97** | **86** | **0** | **11** | **0** |
 
-**Progres: 81% selesai (74/91 item)**
+**Progres: 89% selesai (86/97 item)**
 
 ---
 

@@ -1,0 +1,214 @@
+# =============================================================================
+# Genesis QA — CI/CD Pipeline
+# =============================================================================
+# Runs the full QA test suite on every push to main and every PR targeting main.
+#
+# Steps:
+#   1. Checkout code
+#   2. Setup Python 3.10+
+#   3. Install dependencies from requirements.txt (or fallback: requests + pyyaml)
+#   4. Execute QA pipeline via the run-qa.sh helper script
+#   5. Upload JSON/HTML reports as build artifacts
+#   6. Post a comment on the PR with the test summary
+#   7. Save a failure notification file on test failures
+# =============================================================================
+
+name: Genesis QA Pipeline
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+# Use a fixed permissions block so we can comment on PRs
+permissions:
+  contents: read
+  pull-requests: write
+  checks: write
+
+env:
+  PYTHON_VERSION: "3.11"
+  QA_SYSTEM: "pisantri"
+  QA_MODE: "execute"
+  QA_OUTPUT: "json"
+
+jobs:
+  qa:
+    runs-on: ubuntu-latest
+
+    steps:
+      # ---------------------------------------------------------------
+      # 1. Checkout
+      # ---------------------------------------------------------------
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # ---------------------------------------------------------------
+      # 2. Setup Python
+      # ---------------------------------------------------------------
+      - name: Setup Python ${{ env.PYTHON_VERSION }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+          cache-dependency-path: |
+            requirements.txt
+            .github/workflows/qa-pipeline.yml
+
+      # ---------------------------------------------------------------
+      # 3. Install dependencies
+      # ---------------------------------------------------------------
+      - name: Install dependencies
+        run: |
+          if [ -f requirements.txt ]; then
+            pip install -r requirements.txt
+          else
+            pip install requests pyyaml
+          fi
+        shell: bash
+
+      # ---------------------------------------------------------------
+      # 4. Run QA pipeline
+      # ---------------------------------------------------------------
+      - name: Run QA pipeline
+        id: qa
+        run: |
+          chmod +x .github/scripts/run-qa.sh
+          .github/scripts/run-qa.sh
+        shell: bash
+        continue-on-error: true
+        env:
+          QA_SYSTEM: ${{ env.QA_SYSTEM }}
+          QA_MODE: ${{ env.QA_MODE }}
+          QA_OUTPUT: ${{ env.QA_OUTPUT }}
+          # Secrets are injected from GitHub Secrets
+          PISANTRI_USER_PASSWORD: ${{ secrets.PISANTRI_USER_PASSWORD }}
+          PISANTRI_DB_URL: ${{ secrets.PISANTRI_DB_URL }}
+
+      # ---------------------------------------------------------------
+      # 5. Capture exit code and build summary
+      # ---------------------------------------------------------------
+      - name: Build test summary
+        id: summary
+        run: |
+          EXIT_CODE="${{ steps.qa.outcome }}"
+          if [ "$EXIT_CODE" = "success" ]; then
+            echo "status=passed" >> $GITHUB_OUTPUT
+            echo "emoji=✅" >> $GITHUB_OUTPUT
+            echo "description=All QA tests passed." >> $GITHUB_OUTPUT
+          else
+            echo "status=failed" >> $GITHUB_OUTPUT
+            echo "emoji=❌" >> $GITHUB_OUTPUT
+            echo "description=QA pipeline encountered failures." >> $GITHUB_OUTPUT
+          fi
+        shell: bash
+
+      # ---------------------------------------------------------------
+      # 6. Upload JSON report as artifact
+      # ---------------------------------------------------------------
+      - name: Upload QA reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: genesis-qa-reports
+          path: |
+            reports/*.json
+            reports/*.html
+          if-no-files-found: warn
+          retention-days: 14
+
+      # ---------------------------------------------------------------
+      # 7. Comment test result on PR
+      # ---------------------------------------------------------------
+      - name: Comment PR with test results
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const status  = '${{ steps.summary.outputs.status }}';
+            const emoji   = '${{ steps.summary.outputs.emoji }}';
+            const desc    = '${{ steps.summary.outputs.description }}';
+            const system  = '${{ env.QA_SYSTEM }}';
+            const mode    = '${{ env.QA_MODE }}';
+            const sha     = context.sha.substring(0, 7);
+
+            const body = [
+              `## ${emoji} Genesis QA — ${status === 'passed' ? 'Passed' : 'Failed'}`,
+              ``,
+              `| Detail | Value |`,
+              `|--------|-------|`,
+              `| System | \`${system}\` |`,
+              `| Mode   | \`${mode}\` |`,
+              `| Commit | \`${sha}\` |`,
+              `| Status | **${status.toUpperCase()}** |`,
+              ``,
+              `${desc}`,
+              ``,
+              `<!-- genesis-qa-ci -->`,
+            ].join('\n');
+
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            });
+
+            const existing = comments.find(
+              c => c.user.type === 'Bot' && c.body.includes('<!-- genesis-qa-ci -->')
+            );
+
+            if (existing) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: existing.id,
+                body,
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body,
+              });
+            }
+
+      # ---------------------------------------------------------------
+      # 8. Save failure notification file (optional — can be extended
+      #    to send via WhatsApp webhook later)
+      # ---------------------------------------------------------------
+      - name: Save failure notification
+        if: steps.qa.outcome != 'success'
+        run: |
+          mkdir -p failure-notifications
+          cat > failure-notifications/qa-failure-$(date -u +%Y%m%dT%H%M%SZ).txt <<- EOF
+          Genesis QA — FAILURE NOTIFICATION
+          ==================================
+          Timestamp:  $(date -u +%Y-%m-%dT%H:%M:%SZ)
+          System:     ${{ env.QA_SYSTEM }}
+          Mode:       ${{ env.QA_MODE }}
+          Commit:     ${{ github.sha }}
+          Branch:     ${{ github.ref_name }}
+          Trigger:    ${{ github.event_name }}
+          Actor:      ${{ github.actor }}
+          Status:     FAILED
+          EOF
+        shell: bash
+
+      - name: Upload failure notification artifact
+        if: steps.qa.outcome != 'success'
+        uses: actions/upload-artifact@v4
+        with:
+          name: failure-notifications
+          path: failure-notifications/
+          retention-days: 30
+
+      # ---------------------------------------------------------------
+      # 9. Fail the job if QA tests failed (after artifacts are saved)
+      # ---------------------------------------------------------------
+      - name: Fail job on test failure
+        if: steps.qa.outcome != 'success'
+        run: |
+          echo "::error::QA pipeline failed — check artifacts for details."
+          exit 1
+        shell: bash

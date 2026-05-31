@@ -23,6 +23,42 @@ logger = logging.getLogger(__name__)
 
 
 @dataclass
+class PerformanceResult:
+    """Aggregate statistics from a performance / load test.
+
+    Attributes:
+        avg_ms:               Average (mean) response time in milliseconds.
+        p50_ms:               50th percentile (median) response time.
+        p95_ms:               95th percentile response time.
+        p99_ms:               99th percentile response time.
+        min_ms:               Minimum observed response time.
+        max_ms:               Maximum observed response time.
+        total_requests:       Total number of requests sent.
+        failed_requests:      Number of requests that failed (timeout / error).
+        throughput_req_per_sec: Achieved throughput (requests / second).
+        endpoint:             The endpoint URL that was tested.
+        method:               HTTP method used.
+    """
+
+    avg_ms: float = 0.0
+    p50_ms: float = 0.0
+    p95_ms: float = 0.0
+    p99_ms: float = 0.0
+    min_ms: float = 0.0
+    max_ms: float = 0.0
+    total_requests: int = 0
+    failed_requests: int = 0
+    throughput_req_per_sec: float = 0.0
+    endpoint: str = ""
+    method: str = ""
+    timestamp: str = ""
+
+    def __post_init__(self) -> None:
+        if not self.timestamp:
+            self.timestamp = datetime.now(timezone.utc).isoformat()
+
+
+@dataclass
 class TestResult:
     """Represents the outcome of a single test execution.
 

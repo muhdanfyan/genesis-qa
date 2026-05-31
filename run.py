@@ -33,8 +33,10 @@ from test import (
     RedirectEngine,
     SecurityEngine,
     DbEngine,
+    PerformanceEngine,
     BaseEngine,
     TestResult,
+    PerformanceResult,
     ScenarioConfig,
 )
 
@@ -361,6 +363,124 @@ def run_execute(config: dict[str, Any]) -> list[TestResult]:
     return results
 
 
+def run_performance(config: dict[str, Any]) -> list[PerformanceResult]:
+    """Performance mode: run load / performance tests against endpoints.
+
+    Reads ``performance`` section from the config::
+
+        performance:
+          enabled: true
+          tests:
+            - name: "Homepage response time"
+              endpoint: /
+              method: GET
+              type: response_time         # or concurrent / stress / endurance
+            - name: "Concurrent API load"
+              endpoint: /api/users
+              method: GET
+              type: concurrent
+              num_requests: 20
+              concurrency: 5
+            - name: "Stress test"
+              endpoint: /api/search
+              method: GET
+              type: stress
+              num_requests: 50
+              ramp_up: 5
+            - name: "Endurance soak"
+              endpoint: /health
+              method: GET
+              type: endurance
+              duration_sec: 30
+              interval_ms: 1000
+
+    Args:
+        config: System configuration dict.
+
+    Returns:
+        A list of ``PerformanceResult`` instances.
+    """
+    system = config.get("system", {})
+    base_url = system.get("base_url", "")
+    perf_config = config.get("performance", {})
+
+    if not perf_config.get("enabled", False):
+        logger.info("Performance testing is disabled in config.")
+        return []
+
+    logger.info("=== PERFORMANCE MODE ===")
+    logger.info("System: %s (%s)", system.get("name", "Unknown"), base_url)
+
+    engine = PerformanceEngine(base_url)
+    test_defs = perf_config.get("tests", [])
+    results: list[PerformanceResult] = []
+
+    for test_def in test_defs:
+        test_type = test_def.get("type", "response_time")
+        endpoint = test_def.get("endpoint", "/")
+        method = test_def.get("method", "GET")
+        threshold_ms = float(test_def.get("threshold_ms", 2000))
+        name = test_def.get("name", f"{method} {endpoint}")
+
+        logger.info("[PERF] Starting '%s' (%s) …", name, test_type)
+
+        if test_type == "response_time":
+            result = engine.test_response_time(
+                endpoint=endpoint,
+                method=method,
+                headers=test_def.get("headers"),
+                body=test_def.get("body"),
+                threshold_ms=threshold_ms,
+            )
+        elif test_type == "concurrent":
+            result = engine.test_concurrent(
+                endpoint=endpoint,
+                method=method,
+                headers=test_def.get("headers"),
+                body=test_def.get("body"),
+                num_requests=int(test_def.get("num_requests", 10)),
+                concurrency=int(test_def.get("concurrency", 5)),
+                threshold_ms=threshold_ms,
+            )
+        elif test_type == "stress":
+            result = engine.test_stress(
+                endpoint=endpoint,
+                method=method,
+                headers=test_def.get("headers"),
+                body=test_def.get("body"),
+                num_requests=int(test_def.get("num_requests", 50)),
+                ramp_up=int(test_def.get("ramp_up", 5)),
+                threshold_ms=threshold_ms,
+            )
+        elif test_type == "endurance":
+            result = engine.test_endurance(
+                endpoint=endpoint,
+                method=method,
+                headers=test_def.get("headers"),
+                body=test_def.get("body"),
+                duration_sec=int(test_def.get("duration_sec", 30)),
+                interval_ms=int(test_def.get("interval_ms", 1000)),
+                threshold_ms=threshold_ms,
+            )
+        else:
+            logger.warning("Unknown performance test type '%s' — skipping", test_type)
+            continue
+
+        logger.info(
+            "[PERF] '%s' done — avg=%.0fms  p95=%.0fms  "
+            "throughput=%.1f req/s  failed=%d/%d",
+            name,
+            result.avg_ms,
+            result.p95_ms,
+            result.throughput_req_per_sec,
+            result.failed_requests,
+            result.total_requests,
+        )
+        results.append(result)
+
+    return results
+
+
 # ------------------------------------------------------------------
 # Reporting
 # ------------------------------------------------------------------
@@ -486,9 +606,9 @@ Examples:
 
     parser.add_argument(
         "--mode",
-        choices=["explore", "generate", "execute", "full"],
+        choices=["explore", "generate", "execute", "full", "performance"],
         default="full",
-        help="Pipeline mode (default: full)",
+        help="Pipeline mode (default: full). 'performance' runs load/performance tests",
     )
 
     parser.add_argument(
@@ -530,6 +650,7 @@ def main(argv: Optional[list[str]] = None) -> int:
         return 1
 
     all_results: list[TestResult] = []
+    all_perf_results: list[PerformanceResult] = []
 
     # --- Run pipeline ---
     if args.mode in ("explore", "full"):
@@ -557,7 +678,28 @@ def main(argv: Optional[list[str]] = None) -> int:
         results = run_execute(config)
         all_results.extend(results)
 
+    if args.mode == "performance":
+        all_perf_results = run_performance(config)
+
     duration = time.monotonic() - start
+
+    # --- Performance mode summary ---
+    if all_perf_results:
+        print("─" * 60)
+        print(f"  System:    {config.get('system', {}).get('name', args.system)}")
+        print(f"  Mode:      {args.mode}")
+        print(f"  Tests:     {len(all_perf_results)} performance test(s)")
+        for pr in all_perf_results:
+            status = "PASS" if pr.failed_requests == 0 and pr.avg_ms <= 2000 else "WARN"
+            print(
+                f"    [{status}] {pr.method} {pr.endpoint}  "
+                f"avg={pr.avg_ms:.0f}ms  p95={pr.p95_ms:.0f}ms  "
+                f"throughput={pr.throughput_req_per_sec:.1f} req/s  "
+                f"failed={pr.failed_requests}/{pr.total_requests}"
+            )
+        print(f"  Duration:  {duration:.2f}s")
+        print("─" * 60)
+        return 0
 
     # --- No tests? Warn ---
     if not all_results:

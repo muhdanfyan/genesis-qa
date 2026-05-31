@@ -1,0 +1,75 @@
+# Genesis QA - PISANTRI API Configuration
+# =========================================
+# Configuration for the PISANTRI (Pondok Informatika Santri) system.
+# This is the primary API under test.
+
+system:
+  name: "PISANTRI API"
+  type: "api"
+  base_url: "https://api.pisantri.com"  # Replace with actual URL
+
+auth:
+  login_endpoint: "/auth/login"
+  credentials:
+    admin:
+      username: "admin@pisantri.com"
+      password: "${PISANTRI_ADMIN_PASSWORD}"  # Set via environment variable
+    user:
+      username: "user@pisantri.com"
+      password: "${PISANTRI_USER_PASSWORD}"
+
+endpoints:
+  health:
+    path: "/health"
+    method: "GET"
+    expected_status: [200]
+  dashboard:
+    path: "/dashboard"
+    method: "GET"
+    expected_status: [200]
+  users:
+    list: { path: "/users", method: "GET", expected_status: [200] }
+    create: { path: "/users", method: "POST", expected_status: [201] }
+    get: { path: "/users/{id}", method: "GET", expected_status: [200] }
+    update: { path: "/users/{id}", method: "PUT", expected_status: [200] }
+    delete: { path: "/users/{id}", method: "DELETE", expected_status: [204] }
+  santri:
+    list: { path: "/santri", method: "GET", expected_status: [200] }
+    create: { path: "/santri", method: "POST", expected_status: [201] }
+    get: { path: "/santri/{id}", method: "GET", expected_status: [200] }
+    update: { path: "/santri/{id}", method: "PUT", expected_status: [200] }
+    delete: { path: "/santri/{id}", method: "DELETE", expected_status: [204] }
+  classes:
+    list: { path: "/classes", method: "GET", expected_status: [200] }
+    create: { path: "/classes", method: "POST", expected_status: [201] }
+    get: { path: "/classes/{id}", method: "GET", expected_status: [200] }
+  attendance:
+    list: { path: "/attendance", method: "GET", expected_status: [200] }
+    create: { path: "/attendance", method: "POST", expected_status: [201] }
+  reports:
+    list: { path: "/reports", method: "GET", expected_status: [200] }
+    generate: { path: "/reports/generate", method: "POST", expected_status: [200] }
+
+security:
+  test_cors: true
+  test_headers: true
+  test_redirects: true
+  test_disclosure: true
+  test_directory_listing: false
+
+# CORS test origins
+cors:
+  allowed_origins:
+    - "https://pondokinformatika.com"
+    - "https://admin.pondokinformatika.com"
+
+# Database configuration (optional — only used if driver is available)
+database:
+  enabled: false
+  connection_string: "${PISANTRI_DB_URL}"  # Set via environment variable
+  schema_tables:
+    - users
+    - santri
+    - classes
+    - attendance
+    - reports

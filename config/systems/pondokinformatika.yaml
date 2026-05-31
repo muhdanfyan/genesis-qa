@@ -1,0 +1,48 @@
+# Genesis QA - Pondok Informatika Website Configuration
+# ======================================================
+# Configuration for testing the Pondok Informatika landing page
+# and public-facing website.
+
+system:
+  name: "Pondok Informatika"
+  type: "website"
+  base_url: "https://pondokinformatika.com"
+
+endpoints:
+  home:
+    path: "/"
+    method: "GET"
+    expected_status: [200]
+  about:
+    path: "/about"
+    method: "GET"
+    expected_status: [200]
+  contact:
+    path: "/contact"
+    method: "GET"
+    expected_status: [200]
+  blog:
+    path: "/blog"
+    method: "GET"
+    expected_status: [200]
+  programs:
+    path: "/programs"
+    method: "GET"
+    expected_status: [200]
+  faq:
+    path: "/faq"
+    method: "GET"
+    expected_status: [200]
+
+security:
+  test_cors: false
+  test_headers: true
+  test_redirects: true
+  test_disclosure: true
+  test_directory_listing: true
+
+cors:
+  allowed_origins: []
+
+database:
+  enabled: false

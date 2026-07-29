@@ -105,7 +105,10 @@ genesis-qa/
 ├── config/
 │   └── systems/                   # System configurations (YAML)
 │       ├── pisantri.yaml          # PISANTRI API config
-│       └── pondokinformatika.yaml # Website landing page config
+│       ├── pondokinformatika.yaml # Website landing page config
+│       ├── sipondok.yaml          # SIPondok config
+│       ├── ski.yaml               # SKI config
+│       └── **mpad.yaml**          # **✅ M-PAD Kota Baubau (NEW — 31 Jul 2026)**
 │
 ├── notify/
 │   └── whatsapp.py                # WhatsApp notification formatter

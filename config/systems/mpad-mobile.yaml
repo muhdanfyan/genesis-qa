@@ -1,0 +1,96 @@
+# Genesis QA - M-PAD Mobile (Wajib Pajak) Configuration
+# ======================================================
+# Mobile frontend for Wajib Pajak (citizen app)
+# https://mpad.baubaukota.go.id
+#
+# Single-page application (React SPA)
+# Pages: /, /login, /home, /tagihan, /layanan-retribusi, /pengaduan, /profile
+
+system:
+  name: "M-PAD Mobile WP"
+  type: "single-page-app"
+  base_url: "https://mpad.baubaukota.go.id"
+
+endpoints:
+  # === FRONTEND PAGES ===
+  landing_page:
+    path: "/"
+    method: "GET"
+    expected_status: [200]
+    title_check: "M-PAD - Pembayaran Pajak & Retribusi Daerah Kota Baubau"
+
+  login_page:
+    path: "/login"
+    method: "GET"
+    expected_status: [200]
+
+  home_page:
+    path: "/home"
+    method: "GET"
+    expected_status: [200]
+
+  tagihan_page:
+    path: "/tagihan"
+    method: "GET"
+    expected_status: [200]
+
+  layanan_retribusi_page:
+    path: "/layanan-retribusi"
+    method: "GET"
+    expected_status: [200]
+
+  pengaduan_page:
+    path: "/pengaduan"
+    method: "GET"
+    expected_status: [200]
+
+  profile_page:
+    path: "/profile"
+    method: "GET"
+    expected_status: [200]
+
+  # === STATIC ASSETS ===
+  favicon:
+    path: "/favicon.ico"
+    method: "GET"
+    expected_status: [200]
+
+  pwa_icon:
+    path: "/pwa-icon-192.png"
+    method: "GET"
+    expected_status: [200]
+
+  main_js:
+    path: "/assets/index-CuDicIN_.js"
+    method: "GET"
+    expected_status: [200]
+
+  main_css:
+    path: "/assets/index-CtU7Y9o1.css"
+    method: "GET"
+    expected_status: [200]
+
+security:
+  test_headers: true
+  test_redirects: false
+  test_cors: false
+  test_disclosure: true
+  test_directory_listing: false
+  test_sql_injection: false
+  test_xss: false
+  test_idor: false
+  test_rate_limiting: false
+  test_auth_bypass: false
+  sensitive_paths:
+    - "/.env"
+    - "/.git"
+    - "/phpinfo.php"
+
+cors:
+  allowed_origins: []
+
+database:
+  enabled: false
+
+performance:
+  enabled: false

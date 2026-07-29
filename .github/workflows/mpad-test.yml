@@ -1,0 +1,82 @@
+# Genesis QA — M-PAD CI/CD Pipeline
+# Automatically triggered on push/PR to retribusi-api repository
+
+name: M-PAD Test Suite
+
+on:
+  push:
+    branches: [main, develop]
+    paths:
+      - '**.php'
+      - 'composer.json'
+      - 'composer.lock'
+      - 'phpunit.xml'
+  pull_request:
+    branches: [main]
+  schedule:
+    - cron: '0 22 * * *'  # Daily 22:00 WITA (15:00 UTC)
+
+jobs:
+  phpunit:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Setup PHP
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: 8.4
+        extensions: mbstring, pdo_sqlite, curl, fileinfo
+        coverage: xdebug
+    
+    - name: Validate composer
+      run: composer validate --strict
+    
+    - name: Install dependencies
+      run: composer install --prefer-dist --no-progress
+    
+    - name: Clear config
+      run: php artisan config:clear
+    
+    - name: Run PHPUnit
+      run: php vendor/bin/phpunit --coverage-text
+    
+    - name: Run Genesis QA
+      run: |
+        pip install requests pyyaml
+        python run.py --system mpad --mode execute --output html
+    
+    - name: Upload report
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: mpad-test-report
+        path: report/
+
+  security-scan:
+    runs-on: ubuntu-latest
+    needs: phpunit
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Setup Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.10'
+    
+    - name: Install genesis-qa
+      run: |
+        pip install requests pyyaml aiohttp
+    
+    - name: Security Scan
+      run: |
+        python run.py --system mpad --mode explore --output json
+    
+    - name: Upload security report
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: mpad-security-report
+        path: report/

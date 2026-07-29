@@ -1,0 +1,62 @@
+# Genesis QA - M-PAD Admin Panel Configuration
+# ==============================================
+# Admin frontend for internal staff
+# https://adminmpad.baubaukota.go.id
+#
+# Single-page application (React SPA)
+# Pages: /, /login, /dashboard
+
+system:
+  name: "Mpad Admin - Mitra PAD"
+  type: "single-page-app"
+  base_url: "https://adminmpad.baubaukota.go.id"
+
+endpoints:
+  # === FRONTEND PAGES ===
+  landing_page:
+    path: "/"
+    method: "GET"
+    expected_status: [200]
+    title_check: "Mpad Admin - Mitra PAD"
+
+  login_page:
+    path: "/login"
+    method: "GET"
+    expected_status: [200]
+
+  dashboard_page:
+    path: "/dashboard"
+    method: "GET"
+    expected_status: [200]
+
+  # === STATIC ASSETS ===
+  favicon:
+    path: "/favicon.ico"
+    method: "GET"
+    expected_status: [200]
+
+  main_js:
+    path: "/assets/index-Dw-u_tMf.js"
+    method: "GET"
+    expected_status: [200]
+
+  main_css:
+    path: "/assets/index-BANcCEu9.css"
+    method: "GET"
+    expected_status: [200]
+
+security:
+  test_headers: false
+  test_redirects: false
+  test_cors: false
+  test_disclosure: false
+  test_directory_listing: false
+
+cors:
+  allowed_origins: []
+
+database:
+  enabled: false
+
+performance:
+  enabled: false

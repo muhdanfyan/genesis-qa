@@ -1,0 +1,67 @@
+# Genesis QA - M-PAD Petugas Configuration
+# ==========================================
+# Petugas frontend for field officers
+# https://petugasmpad.baubaukota.go.id
+#
+# Single-page application (React SPA)
+# Pages: /, /login, /dashboard
+
+system:
+  name: "MITRA Petugas - M-PAD Kota Baubau"
+  type: "single-page-app"
+  base_url: "https://petugasmpad.baubaukota.go.id"
+
+endpoints:
+  # === FRONTEND PAGES ===
+  landing_page:
+    path: "/"
+    method: "GET"
+    expected_status: [200]
+    title_check: "MITRA Petugas - M-PAD Kota Baubau"
+
+  login_page:
+    path: "/login"
+    method: "GET"
+    expected_status: [200]
+
+  dashboard_page:
+    path: "/dashboard"
+    method: "GET"
+    expected_status: [200]
+
+  # === STATIC ASSETS ===
+  favicon:
+    path: "/favicon.ico"
+    method: "GET"
+    expected_status: [200]
+
+  main_js:
+    path: "/assets/index-Dnwx2JJg.js"
+    method: "GET"
+    expected_status: [200]
+
+  main_css:
+    path: "/assets/index-BCjhId4A.css"
+    method: "GET"
+    expected_status: [200]
+
+  register_sw:
+    path: "/registerSW.js"
+    method: "GET"
+    expected_status: [200]
+
+security:
+  test_headers: false
+  test_redirects: false
+  test_cors: false
+  test_disclosure: false
+  test_directory_listing: false
+
+cors:
+  allowed_origins: []
+
+database:
+  enabled: false
+
+performance:
+  enabled: false

@@ -1,0 +1,454 @@
+# Genesis QA - M-PAD Kota Baubau Configuration
+# ==============================================
+# Sistem Management Pajak & Retribusi Daerah Kota Baubau
+# Integrasi dengan MASTER_TESTING_PLAN.md
+#
+# 4 Platform:
+#   - API    : apimpad.baubaukota.go.id (Laravel API)
+#   - Mobile : mpad.baubaukota.go.id (React SPA) —→ config/systems/mpad-mobile.yaml
+#   - Admin  : adminmpad.baubaukota.go.id (React SPA) —→ config/systems/mpad-admin.yaml
+#   - Petugas: petugasmpad.baubaukota.go.id (React SPA) —→ config/systems/mpad-petugas.yaml
+#
+# Testing modes: full | api | frontend | security | performance
+
+system:
+  name: "M-PAD Kota Baubau"
+  type: "multi-platform"  # api + website (3 frontend app)
+  version: "v2.0 (M16-M17)"
+  repository: "https://github.com/muhdanfyan/genesis-qa"
+  base_url: "https://apimpad.baubaukota.go.id"
+  test_plan: "references/MPAD_MASTER_TESTING_PLAN.md"
+
+  platforms:
+    api:
+      name: "API Backend"
+      url: "https://apimpad.baubaukota.go.id"
+      type: "api"
+      phpunit: "/home/sipanda/retribusi-api"
+    mobile:
+      name: "Mobile WP"
+      url: "https://mpad.baubaukota.go.id"
+      type: "single-page-app"
+    admin:
+      name: "Admin Panel"
+      url: "https://adminmpad.baubaukota.go.id"
+      type: "single-page-app"
+    petugas:
+      name: "Petugas App"
+      url: "https://petugasmpad.baubaukota.go.id"
+      type: "single-page-app"
+
+auth:
+  login_endpoint: "/api/login"
+  citizen_login: "/api/citizen/login"
+  rate_limit_delay: 1  # detik antara request auth untuk hindari rate limiting
+  credentials:
+    admin_bapenda:
+      username: "admin.main@sipanda.online"
+      password: "Bapenda2026!"
+    petugas:
+      username: "petugas.main@sipanda.online"
+      password: "Bapenda2026!"
+    opd:
+      username: "admin@bapenda.go.id"
+      password: "password123"
+    wajib_pajak:
+      username: "1234567890123456"  # NIK
+      password: "password"
+
+endpoints:
+  # === PUBLIC API ===
+  public_opds:
+    path: "/api/public/opds"
+    method: "GET"
+    expected_status: [200]
+    category: "public"
+
+  retribution_classifications:
+    path: "/api/public/retribution-classifications"
+    method: "GET"
+    expected_status: [200]
+    category: "public"
+
+  retribution_types:
+    path: "/api/public/retribution-types"
+    method: "GET"
+    expected_status: [200]
+    category: "public"
+
+  check_nik:
+    path: "/api/public/taxpayers/check-nik/{nik}"
+    method: "GET"
+    params:
+      nik: "1234567890123456"
+    expected_status: [200]
+    category: "public"
+
+  # === PDF DOCUMENTS (Public) ===
+  pdf_npwpd:
+    path: "/api/public/pdf/npwpd/{id}"
+    method: "GET"
+    params:
+      id: 1
+    expected_status: [200]
+    category: "public"
+
+  pdf_skpd:
+    path: "/api/public/pdf/skpd/{id}"
+    method: "GET"
+    params:
+      id: 1
+    expected_status: [200]
+    category: "public"
+
+  pdf_skrd:
+    path: "/api/public/pdf/skrd/{id}"
+    method: "GET"
+    params:
+      id: 1
+    expected_status: [200]
+    category: "public"
+
+  pdf_sppt:
+    path: "/api/public/pdf/sppt/{id}"
+    method: "GET"
+    params:
+      id: 1
+    expected_status: [200]
+    category: "public"
+
+  pdf_sspd:
+    path: "/api/public/pdf/sspd/{id}"
+    method: "GET"
+    params:
+      id: 1
+    expected_status: [200]
+    category: "public"
+
+  pdf_teguran:
+    path: "/api/public/pdf/surat-teguran/{id}"
+    method: "GET"
+    params:
+      id: 1
+    expected_status: [200]
+    category: "public"
+
+  # === VERIFICATION (Public) ===
+  verify_bill:
+    path: "/api/verify/bill/{number}"
+    method: "GET"
+    params:
+      number: 1
+    expected_status: [200, 404]
+    category: "public"
+
+  verify_payment:
+    path: "/api/verify/payment/{number}"
+    method: "GET"
+    params:
+      number: 1
+    expected_status: [200, 404]
+    category: "public"
+
+  # === PBB (Public) ===
+  pbb_classifications:
+    path: "/api/pbb/classifications"
+    method: "GET"
+    expected_status: [200]
+    category: "public"
+
+  pbb_inquiry:
+    path: "/api/pbb/bapenda/inquiry"
+    method: "POST"
+    body:
+      nop: "123456789012345678"
+      tahun: "2026"
+    expected_status: [200, 404, 503]
+    category: "public"
+
+  # === AUTH ===
+  login_admin:
+    path: "/api/login"
+    method: "POST"
+    body:
+      email: "admin.main@sipanda.online"
+      password: "Bapenda2026!"
+    expected_status: [200]
+    category: "auth"
+
+  login_citizen:
+    path: "/api/citizen/login"
+    method: "POST"
+    body:
+      nik: "1234567890123456"
+      password: "password"
+    expected_status: [200]
+    category: "auth"
+
+  # === PROTECTED — REGISTRASI FLOW ===
+  register_citizen:
+    path: "/api/citizen/register"
+    method: "POST"
+    body:
+      nik: "0000000000000001"
+      name: "TEST BARU"
+      password: "test123"
+      phone: "081234567890"
+    expected_status: [200, 201, 422]
+    category: "registration"
+
+  verify_otp:
+    path: "/api/citizen/verify-otp"
+    method: "POST"
+    body:
+      nik: "0000000000000001"
+      otp: "123456"
+    expected_status: [200, 422]
+    category: "registration"
+
+  # === PROTECTED — BILLING ===
+  bills_list:
+    path: "/api/bills"
+    method: "GET"
+    expected_status: [200, 401]
+    auth_required: true
+    category: "billing"
+
+  bills_create:
+    path: "/api/bills"
+    method: "POST"
+    body:
+      tax_object_id: 1
+      period: "2026-07"
+      amount: 100000
+    expected_status: [201, 401, 422]
+    auth_required: true
+    category: "billing"
+
+  # === PROTECTED — PAYMENT ===
+  payments_list:
+    path: "/api/payments"
+    method: "GET"
+    expected_status: [200, 401]
+    auth_required: true
+    category: "payment"
+
+  payments_create:
+    path: "/api/payments"
+    method: "POST"
+    body:
+      bill_id: 1
+      amount: 100000
+      method: "tunai"
+    expected_status: [201, 401, 422]
+    auth_required: true
+    category: "payment"
+
+  # === SNAP BRI ===
+  snap_health:
+    path: "/snap/v1.0/health"
+    method: "GET"
+    expected_status: [200, 404]
+    category: "bri"
+    note: "Returns SPA HTML on mobile domain; 404 on API domain. SNAP routed via nginx."
+
+  snap_inquiry:
+    path: "/api/snap/v1.0/transfer-va/inquiry"
+    method: "POST"
+    expected_status: [200, 400, 401]
+    category: "bri"
+    note: "Requires X-PARTNER-ID header. Returns 400 Invalid Mandatory Field {X-PARTNER-ID} when missing."
+
+  snap_payment:
+    path: "/api/snap/v1.0/transfer-va/payment"
+    method: "POST"
+    expected_status: [200, 400, 401]
+    category: "bri"
+    note: "Requires X-PARTNER-ID header. Returns 400 Invalid Mandatory Field {X-PARTNER-ID} when missing."
+
+  # === TTE ===
+  tte_verify:
+    path: "/api/tte/verify/{number}"
+    method: "GET"
+    params:
+      number: "TEST-001"
+    expected_status: [200, 404]
+    category: "tte"
+
+  # === PENGAWAS ===
+  enforcement_list:
+    path: "/api/pengawas/enforcements"
+    method: "GET"
+    expected_status: [200, 401]
+    auth_required: true
+    category: "pengawas"
+
+  enforcement_approve:
+    path: "/api/pengawas/enforcements/{id}/approve"
+    method: "POST"
+    params:
+      id: 1
+    expected_status: [200, 401, 403]
+    auth_required: true
+    category: "pengawas"
+
+  # === 4 FASE REGULASI (Protected) ===
+  # Fase 1: Registrasi
+  taxpayer_list:
+    path: "/api/taxpayers"
+    method: "GET"
+    expected_status: [200, 401]
+    auth_required: true
+    category: "regulasi-fase1"
+
+  taxpayer_create:
+    path: "/api/taxpayers"
+    method: "POST"
+    body:
+      nik: "0000000000000002"
+      name: "WAJIB PAJAK TEST"
+    expected_status: [201, 401, 422]
+    auth_required: true
+    category: "regulasi-fase1"
+
+  # Fase 2: Pendataan
+  tax_objects:
+    path: "/api/tax-objects"
+    method: "GET"
+    expected_status: [200, 401]
+    auth_required: true
+    category: "regulasi-fase2"
+
+  tax_objects_create:
+    path: "/api/tax-objects"
+    method: "POST"
+    body:
+      taxpayer_id: 1
+      retribution_type_id: 1
+      name: "OBJEK TEST"
+    expected_status: [201, 401, 422]
+    auth_required: true
+    category: "regulasi-fase2"
+
+  # Fase 3: Penetapan
+  # (via bills endpoint above)
+
+  # Fase 4: Penagihan — SKRD
+  # NOTE: /api/skrd endpoint tidak ditemukan (confirmed 404).
+  # Alternatif menggunakan filter status pada /api/bills.
+  skrd_list:
+    path: "/api/bills?status=skrd"
+    method: "GET"
+    expected_status: [200, 401]
+    auth_required: true
+    category: "regulasi-fase4"
+
+  skrd_create:
+    path: "/api/bills"
+    method: "POST"
+    body:
+      tax_object_id: 1
+      period: "2026-07"
+      amount: 100000
+    expected_status: [201, 401, 422]
+    auth_required: true
+    category: "regulasi-fase4"
+
+  # === DASHBOARD & ANALITIK ===
+  dashboard_stats:
+    path: "/api/dashboard/stats"
+    method: "GET"
+    expected_status: [200, 401]
+    auth_required: true
+    category: "dashboard"
+
+  revenue_report:
+    path: "/api/reports/revenue"
+    method: "GET"
+    expected_status: [200, 401]
+    auth_required: true
+    category: "laporan"
+
+  # === OPD ===
+  opds_list:
+    path: "/api/opds"
+    method: "GET"
+    expected_status: [200, 401]
+    auth_required: true
+    category: "master-data"
+
+  retribution_types_list:
+    path: "/api/retribution-types"
+    method: "GET"
+    expected_status: [200, 401]
+    auth_required: true
+    category: "master-data"
+
+  # === AMNESTY / VERIFICATIONS ===
+  amnesty_list:
+    path: "/api/amnesty"
+    method: "GET"
+    expected_status: [200, 401]
+    auth_required: true
+    category: "penagihan"
+
+  verifications_list:
+    path: "/api/verifications"
+    method: "GET"
+    expected_status: [200, 401]
+    auth_required: true
+    category: "pengawasan"
+
+security:
+  test_cors: true
+  test_headers: true
+  test_redirects: true
+  test_disclosure: true
+  test_directory_listing: true
+  test_sql_injection: true
+  test_xss: true
+  test_idor: true
+  test_rate_limiting: true
+  test_auth_bypass: true
+  sensitive_paths:
+    - "/.env"
+    - "/.git"
+    - "/.git/config"
+    - "/storage/logs"
+    - "/phpinfo.php"
+    - "/debug"
+    - "/api/debug"
+    - "/_ignition"
+    - "/vendor"
+    - "/.env.example"
+
+cors:
+  allowed_origins:
+    - "https://mpad.baubaukota.go.id"
+    - "https://adminmpad.baubaukota.go.id"
+    - "https://petugasmpad.baubaukota.go.id"
+    - "https://apimpad.baubaukota.go.id"
+
+database:
+  enabled: false  # SQLite untuk testing, via PHPUnit langsung
+  connection_string: "${MPAD_DB_URL}"
+
+performance:
+  enabled: true
+  response_time_threshold_ms: 2000
+  concurrent_requests: 20
+  stress_requests: 100
+  endurance_duration_sec: 60
+
+integration:
+  phpunit:
+    path: "/home/sipanda/retribusi-api"
+    command: "php vendor/bin/phpunit"
+    config: "phpunit.xml"
+    pre_run: "php artisan config:clear"
+  github_actions:
+    enabled: true
+    workflow: ".github/workflows/mpad-test.yml"
+  pre_commit_hook:
+    enabled: true
+    path: ".git/hooks/pre-commit"

@@ -58,6 +58,28 @@ except ImportError:
     yaml = None  # type: ignore[assignment]
 
 
+def _resolve_path(path: str, params: Optional[dict[str, Any]] = None) -> str:
+    """Substitute {param} placeholders in a path with actual values.
+
+    Looks up each ``{key}`` placeholder inside *params*, then does a
+    simple string replacement.  If a placeholder has no matching param
+    it is left untouched so callers can choose to fail later if desired.
+
+    Args:
+        path:   Endpoint path template (e.g. ``/api/taxpayers/{id}``).
+        params: Dict of key → value substitutions (e.g. ``{"id": 1}``).
+
+    Returns:
+        The resolved path string.
+    """
+    if not params:
+        return path
+    resolved = path
+    for key, value in params.items():
+        resolved = resolved.replace(f"{{{key}}}", str(value))
+    return resolved
+
+
 # ------------------------------------------------------------------
 # Config loading
 # ------------------------------------------------------------------
@@ -167,11 +189,13 @@ def _test_endpoint(
     path = ep_config.get("path", "/")
     method = ep_config.get("method", "GET")
     expected_status = ep_config.get("expected_status", [200])
+    params = ep_config.get("params")
+    resolved_path = _resolve_path(path, params)
 
     scenario = ScenarioConfig(
         name=f"Explore: {name}",
         method=method,
-        endpoint=path,
+        endpoint=resolved_path,
         expected_status=expected_status,
         follow_redirects=True,
     )
@@ -223,10 +247,13 @@ def run_generate(config: dict[str, Any]) -> list[dict[str, Any]]:
 
 def _build_scenario(name: str, ep_config: dict[str, Any]) -> dict[str, Any]:
     """Build a scenario dict from endpoint config."""
+    path = ep_config.get("path", "/")
+    params = ep_config.get("params")
+    resolved_path = _resolve_path(path, params)
     return {
         "name": f"Test {name}",
         "method": ep_config.get("method", "GET"),
-        "endpoint": ep_config.get("path", "/"),
+        "endpoint": resolved_path,
         "expected_status": ep_config.get("expected_status", [200]),
         "follow_redirects": True,
         "retries": 1,
@@ -265,10 +292,13 @@ def run_execute(config: dict[str, Any]) -> list[TestResult]:
     for category, ep_config in endpoints.items():
         if isinstance(ep_config, dict):
             if "path" in ep_config:
+                path = ep_config.get("path", "/")
+                params = ep_config.get("params")
+                resolved_path = _resolve_path(path, params)
                 scenario = ScenarioConfig(
                     name=f"{category}",
                     method=ep_config.get("method", "GET"),
-                    endpoint=ep_config.get("path", "/"),
+                    endpoint=resolved_path,
                     expected_status=ep_config.get("expected_status", [200]),
                     follow_redirects=True,
                 )
@@ -276,10 +306,13 @@ def run_execute(config: dict[str, Any]) -> list[TestResult]:
                 results.append(result)
             else:
                 for sub_name, sub_config in ep_config.items():
+                    path = sub_config.get("path", "/")
+                    params = sub_config.get("params")
+                    resolved_path = _resolve_path(path, params)
                     scenario = ScenarioConfig(
                         name=f"{category}.{sub_name}",
                         method=sub_config.get("method", "GET"),
-                        endpoint=sub_config.get("path", "/"),
+                        endpoint=resolved_path,
                         expected_status=sub_config.get("expected_status", [200]),
                         follow_redirects=True,
                     )
@@ -300,9 +333,17 @@ def run_execute(config: dict[str, Any]) -> list[TestResult]:
 
         auth_engine = AuthEngine(base_url, credentials=credentials)
         login_endpoint = auth_config.get("login_endpoint", "/auth/login")
+        rate_delay = float(auth_config.get("rate_limit_delay", 0))
 
         for role, creds in credentials.items():
             if creds["username"] and creds["password"]:
+                # Rate-limiting delay between auth requests
+                if rate_delay > 0:
+                    logger.info(
+                        "Waiting %.1fs before next auth request (rate_limit_delay)...",
+                        rate_delay,
+                    )
+                    time.sleep(rate_delay)
                 result = auth_engine.test_login(
                     username=creds["username"],
                     password=creds["password"],

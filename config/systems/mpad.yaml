@@ -245,24 +245,23 @@ endpoints:
     category: "payment"
 
   # === SNAP BRI ===
-  snap_health:
-    path: "/snap/v1.0/health"
-    method: "GET"
-    expected_status: [200, 404]
+  snap_access_token:
+    path: "/api/snap/v1.0/access-token/b2b"
+    method: "POST"
+    expected_status: [400]
     category: "bri"
-    note: "Returns SPA HTML on mobile domain; 404 on API domain. SNAP routed via nginx."
+    note: "400 = route exists but missing body. Endpoint hidup."
 
   snap_inquiry:
     path: "/api/snap/v1.0/transfer-va/inquiry"
     method: "POST"
-    expected_status: [200, 400, 401]
+    expected_status: [400]
     category: "bri"
-    note: "Requires X-PARTNER-ID header. Returns 400 Invalid Mandatory Field {X-PARTNER-ID} when missing."
 
   snap_payment:
     path: "/api/snap/v1.0/transfer-va/payment"
     method: "POST"
-    expected_status: [200, 400, 401]
+    expected_status: [400]
     category: "bri"
     note: "Requires X-PARTNER-ID header. Returns 400 Invalid Mandatory Field {X-PARTNER-ID} when missing."
 
@@ -353,6 +352,88 @@ endpoints:
     expected_status: [201, 401, 422]
     auth_required: true
     category: "regulasi-fase4"
+
+  # === M18 — SPPT RECORDS (PBB) + RECONCILIATION vs BPN ===
+  # Migrasi: 2026_08_01_210000_create_sppt_records_table.php (Ran di VPS)
+  # Tabel sppt_records terverifikasi ada (SHOW TABLES). Test auth-required:
+  # 401 = route hidup + middleware auth; 500 = tabel/controller bermasalah.
+  sppt_records_list:
+    path: "/api/sppt-records"
+    method: "GET"
+    expected_status: [200, 401]
+    auth_required: true
+    category: "sppt-m18"
+
+  sppt_records_store:
+    path: "/api/sppt-records"
+    method: "POST"
+    body:
+      nop: "999999999999999999"
+      tax_year: "2026"
+      taxpayer_name: "TEST SPPT QA"
+    expected_status: [201, 401, 422]
+    auth_required: true
+    category: "sppt-m18"
+
+  sppt_records_stats:
+    path: "/api/sppt-records/stats"
+    method: "GET"
+    expected_status: [200, 401]
+    auth_required: true
+    category: "sppt-m18"
+
+  sppt_record_show:
+    path: "/api/sppt-records/{id}"
+    method: "GET"
+    params:
+      id: 1
+    expected_status: [200, 401, 404]
+    auth_required: true
+    category: "sppt-m18"
+
+  sppt_record_reconcile:
+    path: "/api/sppt-records/{id}/reconcile"
+    method: "POST"
+    params:
+      id: 1
+    expected_status: [200, 401, 404, 422]
+    auth_required: true
+    category: "sppt-m18"
+
+  # === M18 — QR PAYMENT (qr_tokens) ===
+  # Migrasi: 2026_08_01_200000_create_qr_tokens_table.php (Ran di VPS)
+  # Tabel qr_tokens terverifikasi ada, 2 baris (QR Saya WP + petugas).
+  officer_my_qr:
+    path: "/api/officer/my-qr"
+    method: "GET"
+    expected_status: [200, 401]
+    auth_required: true
+    category: "qr-payment-m18"
+
+  citizen_my_qr:
+    path: "/api/citizen/my-qr"
+    method: "GET"
+    expected_status: [200, 401]
+    auth_required: true
+    category: "qr-payment-m18"
+
+  qr_generate_admin:
+    path: "/api/bills/{bill}/generate-qr"
+    method: "POST"
+    params:
+      bill: 1
+    expected_status: [200, 401, 404, 422]
+    auth_required: true
+    category: "qr-payment-m18"
+
+  bill_export_sppt:
+    path: "/api/bills/{bill}/sppt"
+    method: "GET"
+    params:
+      bill: 1
+    expected_status: [200, 401, 404]
+    auth_required: true
+    category: "sppt-m18"
 
   # === DASHBOARD & ANALITIK ===
   dashboard_stats:

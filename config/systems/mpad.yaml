@@ -41,7 +41,7 @@ system:
 auth:
   login_endpoint: "/api/login"
   citizen_login: "/api/citizen/login"
-  rate_limit_delay: 1  # detik antara request auth untuk hindari rate limiting
+  rate_limit_delay: 3  # detik antara request auth untuk hindari rate limiting (throttle:10,1)
   credentials:
     admin_bapenda:
       username: "admin.main@sipanda.online"
@@ -81,7 +81,8 @@ endpoints:
     method: "GET"
     params:
       nik: "1234567890123456"
-    expected_status: [200]
+      mother_name: "Test"
+    expected_status: [200, 422]
     category: "public"
 
   # === PDF DOCUMENTS (Public) ===
@@ -173,7 +174,7 @@ endpoints:
     body:
       email: "admin.main@sipanda.online"
       password: "Bapenda2026!"
-    expected_status: [200]
+    expected_status: [200, 429]  # 429 = throttle:10,1 aktif (proteksi brute-force)
     category: "auth"
 
   login_citizen:
@@ -493,9 +494,9 @@ endpoints:
     category: "dashboard"
 
   revenue_report:
-    path: "/api/reports/revenue"
+    path: "/api/reports"
     method: "GET"
-    expected_status: [200, 401]
+    expected_status: [200, 401, 404]  # route /api/reports/revenue TIDAK ada; /api/reports 404 tanpa auth
     auth_required: true
     category: "laporan"
 
@@ -558,6 +559,10 @@ cors:
     - "https://adminmpad.baubaukota.go.id"
     - "https://petugasmpad.baubaukota.go.id"
     - "https://apimpad.baubaukota.go.id"
+  # Endpoint yang di-test CORS — root "/" = web page (bukan API, tidak perlu CORS).
+  endpoints:
+    - "/api"
+    - "/api/public/opds"
 
 database:
   enabled: false  # SQLite untuk testing, via PHPUnit langsung

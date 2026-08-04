@@ -155,14 +155,18 @@ class CorsEngine(BaseEngine):
             result["error"] = f"OPTIONS preflight failed: {exc}"
             return result
 
-        # Check required CORS headers on preflight
-        for header in self.REQUIRED_CORS_HEADERS:
-            if header not in pre_resp.headers:
-                result["passed"] = False
-                result["error"] += f"Missing {header} in preflight; "
+        # Check required CORS headers on preflight.
+        # ACAO kosong = origin DITOLAK dengan benar (untuk different/null — bukan kegagalan).
+        acao = pre_resp.headers.get("Access-Control-Allow-Origin", "")
+        if origin_label != "same" and not acao:
+            pass  # origin asing/null ditolak — perilaku yang benar, lewati required check
+        else:
+            for header in self.REQUIRED_CORS_HEADERS:
+                if header not in pre_resp.headers:
+                    result["passed"] = False
+                    result["error"] += f"Missing {header} in preflight; "
 
         # Validate Access-Control-Allow-Origin
-        acao = pre_resp.headers.get("Access-Control-Allow-Origin", "")
         if origin_label == "same":
             # Should echo back the origin or be '*' — check it's not null
             if not acao or acao == "null":

@@ -381,7 +381,8 @@ def run_execute(config: dict[str, Any]) -> list[TestResult]:
     # --- 5. CORS Engine ---
     if security_config.get("test_cors", False) and cors_config.get("allowed_origins"):
         cors_engine = CorsEngine(base_url)
-        for endpoint_path in ["/", "/api"]:
+        cors_endpoints = cors_config.get("endpoints", ["/", "/api"])
+        for endpoint_path in cors_endpoints:
             result = cors_engine.test_cors(endpoint=endpoint_path)
             results.append(result)
 

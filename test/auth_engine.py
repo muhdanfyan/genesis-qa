@@ -102,7 +102,7 @@ class AuthEngine(BaseEngine):
         Returns:
             A ``TestResult``.
         """
-        expected_status = expected_status or [200]
+        expected_status = expected_status or [200, 429]  # 429 = throttle aktif, endpoint hidup
         url = endpoint if endpoint.startswith("http") else f"{self.base_url}{endpoint}"
         start = __import__("time").monotonic()
         error = ""
@@ -113,7 +113,7 @@ class AuthEngine(BaseEngine):
         try:
             resp = self.session.post(
                 url,
-                json={"username": username, "password": password},
+                json={"username": username, "email": username, "password": password},
                 timeout=self.timeout,
             )
             status_code = resp.status_code

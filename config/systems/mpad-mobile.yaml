@@ -4,7 +4,9 @@
 # https://mpad.baubaukota.go.id
 #
 # Single-page application (React SPA)
-# Pages: /, /login, /home, /tagihan, /layanan-retribusi, /pengaduan, /profile
+# Pages: /, /login, /home, /tagihan, /layanan-retribusi, /layanan/186, /bayar, /pengaduan, /profile, /register
+# Update: 4 Agu 2026 — hasil QA walkthrough (Playwright). main_js hash = bundle terbaru (index-RifcWmAH.js).
+# ⚠️ main_js/main_css hash berubah tiap build — update setelah deploy baru.
 
 system:
   name: "M-PAD Mobile WP"
@@ -39,13 +41,43 @@ endpoints:
     method: "GET"
     expected_status: [200]
 
+  layanan_retribusi_retribusi_tab:
+    path: "/layanan-retribusi?tab=retribusi"
+    method: "GET"
+    expected_status: [200]
+
+  layanan_retribusi_aset_tab:
+    path: "/layanan-retribusi?tab=aset"
+    method: "GET"
+    expected_status: [200]
+
+  layanan_detail_page:
+    path: "/layanan/186"
+    method: "GET"
+    expected_status: [200]
+
+  bayar_page:
+    path: "/bayar"
+    method: "GET"
+    expected_status: [200]
+
   pengaduan_page:
     path: "/pengaduan"
     method: "GET"
     expected_status: [200]
 
+  faq_page:
+    path: "/pengaduan?tab=bantuan"
+    method: "GET"
+    expected_status: [200]
+
   profile_page:
     path: "/profile"
+    method: "GET"
+    expected_status: [200]
+
+  register_page:
+    path: "/register"
     method: "GET"
     expected_status: [200]
 
@@ -61,7 +93,7 @@ endpoints:
     expected_status: [200]
 
   main_js:
-    path: "/assets/index-CuDicIN_.js"
+    path: "/assets/index-RifcWmAH.js"
     method: "GET"
     expected_status: [200]
 

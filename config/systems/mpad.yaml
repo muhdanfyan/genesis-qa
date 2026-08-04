@@ -244,6 +244,55 @@ endpoints:
     auth_required: true
     category: "payment"
 
+  # === FLOW PEMBAYARAN CITIZEN — Cart E-Commerce (5 Agu 2026) ===
+  # Fitur keranjang global (mpad_cart_v1), tab Tagihan/Keranjang di /bayar,
+  # filter periode + label waktu sesuai billing_cycle (yearly PBB / monthly),
+  # payment request BRIVA (backend hanya support bri_va; QRIS = fallback panel).
+  citizen_bills:
+    path: "/api/citizen/bills"
+    method: "GET"
+    expected_status: [200, 401]
+    auth_required: true
+    category: "billing"
+
+  citizen_services_detail:
+    path: "/api/citizen/services/172"
+    method: "GET"
+    expected_status: [200, 401]
+    auth_required: true
+    category: "billing"
+
+  citizen_services_detail_pbb:
+    path: "/api/citizen/services/186"
+    method: "GET"
+    expected_status: [200, 401]
+    auth_required: true
+    category: "billing"
+
+  citizen_payment_requests_create:
+    path: "/api/citizen/payment-requests"
+    method: "POST"
+    body:
+      bill_ids: [1]
+      method: "bri_va"
+    expected_status: [201, 401, 422]
+    auth_required: true
+    category: "payment"
+
+  citizen_payment_requests_show:
+    path: "/api/citizen/payment-requests/1"
+    method: "GET"
+    expected_status: [200, 401, 404]
+    auth_required: true
+    category: "payment"
+
+  citizen_payments_history:
+    path: "/api/citizen/payments/history"
+    method: "GET"
+    expected_status: [200, 401]
+    auth_required: true
+    category: "payment"
+
   # === SNAP BRI ===
   snap_access_token:
     path: "/api/snap/v1.0/access-token/b2b"
